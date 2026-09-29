@@ -1,0 +1,204 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Privacy Gateway — MVP Prototype</title>
+<style>
+:root{
+  --bg:#f6f7f9; --card:#ffffff; --text:#172033; --muted:#667085;
+  --border:#d9dee7; --accent:#3859d6; --panel:#eef1f6; --danger:#b42318;
+  --good:#137a4b; --warn:#9a6700;
+}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--text);font-family:Inter,Segoe UI,Arial,sans-serif}
+main{max-width:980px;margin:0 auto;padding:28px 18px 50px}
+.top{display:flex;gap:12px;justify-content:space-between;align-items:center;flex-wrap:wrap;margin-bottom:10px}
+.badge{font-size:12px;font-weight:700;border:1px solid var(--border);padding:6px 10px;border-radius:999px;background:#fff}
+.muted{color:var(--muted)}
+.progress{height:7px;background:var(--panel);border-radius:999px;overflow:hidden;margin-bottom:22px}
+.progress>div{height:100%;width:25%;background:var(--accent);transition:width .25s ease}
+.card{background:var(--card);border:1px solid var(--border);border-radius:18px;padding:24px}
+.center{text-align:center}
+.lock{width:58px;height:58px;border-radius:16px;background:var(--panel);display:grid;place-items:center;font-size:28px;margin:0 auto 14px}
+h1,h2,h3{margin-top:0}
+h1{font-size:28px;margin-bottom:8px}
+h2{font-size:22px;margin-bottom:8px}
+.drop{border:2px dashed var(--border);border-radius:14px;padding:28px 16px;margin:20px 0}
+button{font:inherit;border-radius:10px;min-height:44px;padding:11px 18px;cursor:pointer}
+.primary{border:0;background:var(--accent);color:white;font-weight:700}
+.secondary{background:white;border:1px solid var(--border);font-weight:650}
+button:focus{outline:3px solid rgba(56,89,214,.22);outline-offset:2px}
+.grid3{display:grid;grid-template-columns:repeat(3,1fr);gap:12px}
+.info{background:var(--panel);border-radius:10px;padding:14px;text-align:left}
+.stats{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-bottom:14px}
+.stat{border:1px solid var(--border);border-radius:12px;background:#fff;padding:16px}
+.num{font-size:26px;font-weight:800}
+.row{display:flex;justify-content:space-between;gap:12px;padding:14px 0;border-bottom:1px solid var(--border)}
+.row:last-child{border-bottom:0}
+.toolbar{display:flex;gap:10px;flex-wrap:wrap;margin-top:18px}
+.reviewgrid{display:grid;grid-template-columns:.9fr 1.1fr;gap:14px}
+.panel{border:1px solid var(--border);border-radius:14px;overflow:hidden;background:#fff}
+.panelhead{background:var(--panel);padding:13px 15px;font-weight:750;display:flex;justify-content:space-between;gap:10px}
+.findings{padding:8px}
+.finding{display:block;width:100%;background:transparent;border:0;text-align:left;padding:12px;border-radius:10px}
+.finding:hover,.finding.active{background:var(--panel)}
+.preview{padding:16px;line-height:1.8;font-size:14px}
+mark{background:#fff0a8;border-radius:4px;padding:1px 3px}
+.detail{margin-top:14px;background:var(--panel);padding:15px;border-radius:12px}
+.safegrid{max-width:520px;margin:18px auto;text-align:left;background:var(--panel);border-radius:12px;padding:14px}
+.safegrid .r{display:flex;justify-content:space-between;gap:16px;padding:7px 0}
+.hidden{display:none!important}
+.tag{padding:5px 9px;border-radius:999px;background:var(--panel);font-size:13px;font-weight:700}
+.notice{font-size:13px;color:var(--muted);margin-top:12px}
+@media(max-width:700px){
+  main{padding:18px 12px 36px}
+  .grid3,.stats,.reviewgrid{grid-template-columns:1fr}
+  h1{font-size:24px}
+}
+</style>
+</head>
+<body>
+<main id="app">
+  <div class="top">
+    <span class="badge">PRIVACY GATEWAY · MVP PROTOTYPE</span>
+    <span id="stepLabel" class="muted">Step 1 of 4 · Select document</span>
+  </div>
+  <div class="progress"><div id="progressBar"></div></div>
+
+  <section id="screenUpload" class="card center">
+    <div class="lock">🔒</div>
+    <h1>Make a document safe to use</h1>
+    <p class="muted">Privacy Gateway scans locally for sensitive information, lets you review what was found, then creates a sanitized copy.</p>
+    <div class="drop">
+      <h3 style="margin-bottom:6px">Drop a document here</h3>
+      <p class="muted">PDF · DOCX · TXT</p>
+      <button id="startDemo" class="primary" type="button">Try with sample work document</button>
+    </div>
+    <div class="grid3">
+      <div class="info"><strong>✓ Local processing</strong><div class="muted">Original stays on device.</div></div>
+      <div class="info"><strong>✓ Zero retention</strong><div class="muted">Temporary session only.</div></div>
+      <div class="info"><strong>✓ Human review</strong><div class="muted">You approve the result.</div></div>
+    </div>
+    <div class="notice">Prototype only: this demo does not open or scan a real file yet.</div>
+  </section>
+
+  <section id="screenResults" class="hidden">
+    <div class="stats">
+      <div class="stat"><div class="num">8</div><div class="muted">Sensitive items found</div></div>
+      <div class="stat"><div class="num">6</div><div class="muted">High confidence</div></div>
+      <div class="stat"><div class="num">2</div><div class="muted">Need your review</div></div>
+    </div>
+    <div class="card">
+      <div class="top">
+        <div><h2>Privacy scan complete</h2><div class="muted">Employee Incident Notes.docx</div></div>
+        <span class="tag">Risk: High</span>
+      </div>
+      <div class="row"><span>Person names</span><strong>3 found</strong></div>
+      <div class="row"><span>Personal phone number</span><strong>1 found</strong></div>
+      <div class="row"><span>Email address</span><strong>1 found</strong></div>
+      <div class="row"><span>Employee ID</span><strong>1 found</strong></div>
+      <div class="row"><span>Possible identifying context</span><strong>2 found</strong></div>
+      <div class="toolbar"><button id="reviewResults" class="primary" type="button">Review findings</button></div>
+    </div>
+  </section>
+
+  <section id="screenReview" class="hidden">
+    <div style="margin-bottom:12px">
+      <h2>Review before sanitizing</h2>
+      <div class="muted">Select a finding to see why it matters and what Privacy Gateway recommends.</div>
+    </div>
+    <div class="reviewgrid">
+      <div class="panel">
+        <div class="panelhead">Detected information</div>
+        <div class="findings">
+          <button class="finding" type="button" data-title="Adam Nickerson" data-action="Alias → Employee A" data-reason="A person name can directly identify an individual. Aliasing preserves context without exposing the identity."><strong>Adam Nickerson</strong><div class="muted">Person · 99% · Alias</div></button>
+          <button class="finding" type="button" data-title="Jason Smith" data-action="Alias → Supervisor B" data-reason="This name identifies another person. A role-aware alias preserves the relationship between people."><strong>Jason Smith</strong><div class="muted">Person · 98% · Alias</div></button>
+          <button class="finding" type="button" data-title="BC-48392" data-action="Remove" data-reason="A unique employee identifier can connect the document to an internal personnel record."><strong>BC-48392</strong><div class="muted">Employee ID · 100% · Remove</div></button>
+          <button class="finding" type="button" data-title="207-555-1932" data-action="Remove" data-reason="A personal phone number is a direct identifier and is unnecessary for most AI tasks."><strong>207-555-1932</strong><div class="muted">Phone · 100% · Remove</div></button>
+          <button class="finding" type="button" data-title="adam@example.edu" data-action="Remove" data-reason="An email address can directly identify a person and should be removed when it is not needed."><strong>adam@example.edu</strong><div class="muted">Email · 100% · Remove</div></button>
+          <button class="finding" type="button" data-title="Room 219" data-action="Review" data-reason="A room number may be harmless operational information or identifying context depending on organization policy."><strong>Room 219</strong><div class="muted">Location · 72% · Review</div></button>
+        </div>
+      </div>
+      <div class="panel">
+        <div class="panelhead"><span>Document preview</span><span class="muted">Original → Safe</span></div>
+        <div class="preview">
+          <strong class="muted" style="font-size:12px">ORIGINAL</strong>
+          <p><mark>Adam Nickerson</mark> reported a custodial incident to <mark>Jason Smith</mark>.<br>
+          Employee ID: <mark>BC-48392</mark><br>
+          Phone: <mark>207-555-1932</mark><br>
+          Email: <mark>adam@example.edu</mark><br>
+          Location: Room 219</p>
+          <hr style="border:0;border-top:1px solid var(--border);margin:15px 0">
+          <strong class="muted" style="font-size:12px">SAFE VERSION</strong>
+          <p><strong>Employee A</strong> reported a custodial incident to <strong>Supervisor B</strong>.<br>
+          Employee ID: <strong>[REMOVED]</strong><br>
+          Phone: <strong>[PHONE REMOVED]</strong><br>
+          Email: <strong>[EMAIL REMOVED]</strong><br>
+          Location: Room 219</p>
+        </div>
+      </div>
+    </div>
+    <div id="detailBox" class="detail" aria-live="polite">
+      <strong>Select a finding</strong>
+      <div class="muted" style="margin-top:5px">Privacy Gateway will explain why it may be sensitive.</div>
+    </div>
+    <div class="toolbar">
+      <button id="makeSafe" class="primary" type="button">Make This Safe</button>
+      <button id="backResults" class="secondary" type="button">Back</button>
+    </div>
+  </section>
+
+  <section id="screenDone" class="card center hidden">
+    <div class="lock">✓</div>
+    <h1>Safe copy ready</h1>
+    <p class="muted">8 sensitive items were protected. Your original document was not modified.</p>
+    <div class="safegrid">
+      <div class="r"><span>Original uploaded</span><strong>No</strong></div>
+      <div class="r"><span>Original modified</span><strong>No</strong></div>
+      <div class="r"><span>Sensitive values retained</span><strong>No</strong></div>
+      <div class="r"><span>Temporary session data</span><strong>Destroyed</strong></div>
+    </div>
+    <button id="restartDemo" class="secondary" type="button">Scan another document</button>
+  </section>
+</main>
+
+<script>
+(function(){
+  var screens = ["screenUpload","screenResults","screenReview","screenDone"];
+  var stepLabel = document.getElementById("stepLabel");
+  var progressBar = document.getElementById("progressBar");
+  function show(id, step, text){
+    screens.forEach(function(s){
+      document.getElementById(s).classList.toggle("hidden", s !== id);
+    });
+    progressBar.style.width = (step * 25) + "%";
+    stepLabel.textContent = "Step " + step + " of 4 · " + text;
+    window.scrollTo({top:0, behavior:"smooth"});
+  }
+  document.getElementById("startDemo").addEventListener("click", function(){show("screenResults",2,"Scan results");});
+  document.getElementById("reviewResults").addEventListener("click", function(){show("screenReview",3,"Review findings");});
+  document.getElementById("backResults").addEventListener("click", function(){show("screenResults",2,"Scan results");});
+  document.getElementById("makeSafe").addEventListener("click", function(){show("screenDone",4,"Safe copy ready");});
+  document.getElementById("restartDemo").addEventListener("click", function(){show("screenUpload",1,"Select document");});
+
+  var detail = document.getElementById("detailBox");
+  document.querySelectorAll(".finding").forEach(function(btn){
+    btn.addEventListener("click", function(){
+      document.querySelectorAll(".finding").forEach(function(x){x.classList.remove("active");});
+      btn.classList.add("active");
+      detail.innerHTML = "";
+      var strong = document.createElement("strong");
+      strong.textContent = btn.getAttribute("data-title") + " — " + btn.getAttribute("data-action");
+      var p = document.createElement("div");
+      p.className = "muted";
+      p.style.marginTop = "5px";
+      p.textContent = btn.getAttribute("data-reason");
+      detail.appendChild(strong);
+      detail.appendChild(p);
+    });
+  });
+})();
+</script>
+</body>
+</html>
